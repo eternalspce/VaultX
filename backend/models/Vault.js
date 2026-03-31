@@ -1,11 +1,14 @@
-// models/Vault.js
 const mongoose = require("mongoose");
 
 const vaultSchema = new mongoose.Schema({
-  userId: String,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
   platform: String,
   username: String,
-  password: String
+  password: String,
+  iv: String
 });
 
 module.exports = mongoose.model("Vault", vaultSchema);
