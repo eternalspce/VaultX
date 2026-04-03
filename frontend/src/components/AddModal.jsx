@@ -14,11 +14,12 @@ import { Label } from "./ui/label";
 
 const AddModal = ({ onAdd }) => {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [platform, setPlatform] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const trimmedPlatform = platform.trim();
@@ -39,32 +40,39 @@ const AddModal = ({ onAdd }) => {
       return;
     }
 
-    onAdd({
-      platform: trimmedPlatform,
-      username: trimmedUsername,
-      password: trimmedPassword,
-    });
+    try {
+      setLoading(true);
+      await onAdd({
+        platform: trimmedPlatform,
+        username: trimmedUsername,
+        password: trimmedPassword,
+      });
 
-    setPlatform("");
-    setUsername("");
-    setPassword("");
-    setOpen(false);
-
-    toast.success("Password entry added");
+      setPlatform("");
+      setUsername("");
+      setPassword("");
+      setOpen(false);
+    } catch (error) {
+      console.error("Submit error:", error);
+      toast.error("Failed to add entry");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 font-heading font-semibold">
+        <Button className="gap-2 font-heading font-semibold bg-primary/10 text-primary border border-border hover:bg-primary/20">
+          {" "}
           <Plus className="h-4 w-4" />
           Add New
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="border-border bg-card sm:max-w-md">
+      <DialogContent className="border-border sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-heading text-xl">
+          <DialogTitle className="font-heading text-2xl text-foreground">
             Add New Password
           </DialogTitle>
         </DialogHeader>
@@ -81,6 +89,7 @@ const AddModal = ({ onAdd }) => {
               onChange={(e) => setPlatform(e.target.value)}
               maxLength={100}
               className="bg-muted border-border font-mono"
+              disabled={loading}
             />
           </div>
 
@@ -95,6 +104,7 @@ const AddModal = ({ onAdd }) => {
               onChange={(e) => setUsername(e.target.value)}
               maxLength={100}
               className="bg-muted border-border font-mono"
+              disabled={loading}
             />
           </div>
 
@@ -110,14 +120,16 @@ const AddModal = ({ onAdd }) => {
               onChange={(e) => setPassword(e.target.value)}
               maxLength={200}
               className="bg-muted border-border font-mono"
+              disabled={loading}
             />
           </div>
 
           <Button
             type="submit"
             className="w-full font-heading font-semibold"
+            disabled={loading}
           >
-            Save Entry
+            {loading ? "Saving..." : "Save Entry"}
           </Button>
         </form>
       </DialogContent>
